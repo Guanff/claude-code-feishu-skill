@@ -115,17 +115,77 @@ requests.post(
     headers={'Authorization': f'Bearer {USER_TOKEN}'})
 ```
 
-**Supported block types**:
+## Block Format Reference (Complete)
 
-| Type | Function | Notes |
-|------|----------|-------|
-| H1 | block_type=3 | With emoji |
-| H2 | block_type=4 | With emoji |
-| Text | block_type=2 | Plain text |
-| Bullet | text + `style.list.type:'bullet'` | **NOT** block_type=9 |
-| Bold | `text_style:{bold:true}` on text_run | Works with Chinese |
-| Link | `text_style:{link:{url:'...'}}` on text_run | ✅ |
-| Divider | block_type=19 | ❌ NOT supported |
+### Field Name Correction
+The text style field is `text_element_style` (NOT `text_style`).
+
+### Helper Functions (Python)
+
+```python
+def h1(s): return {'block_type':3,'heading1':{'elements':[{'text_run':{'content':s,'text_element_style':{}}}]}}
+def h2(s): return {'block_type':4,'heading2':{'elements':[{'text_run':{'content':s,'text_element_style':{}}}]}}
+def h3(s): return {'block_type':5,'heading3':{'elements':[{'text_run':{'content':s,'text_element_style':{}}}]}}
+def text(s): return {'block_type':2,'text':{'elements':[{'text_run':{'content':s,'text_element_style':{}}}]}}
+def empty(): return {'block_type':2,'text':{'elements':[],'style':{}}}
+
+def bullet(s):
+    return {'block_type':2,'text':{'elements':[{'text_run':{'content':s,'text_element_style':{}}}],'style':{'list':{'type':'bullet','indentLevel':1}}}}
+
+def number_list(s, n):
+    return {'block_type':2,'text':{'elements':[{'text_run':{'content':s,'text_element_style':{}}}],'style':{'list':{'type':'number','indentLevel':1,'number':n}}}}
+
+def bold(text): return {'text_run':{'content':text,'text_element_style':{'bold':True}}}
+def italic(text): return {'text_run':{'content':text,'text_element_style':{'italic':True}}}
+def link(url, text): return {'text_run':{'content':text,'text_element_style':{'link':{'url':url}}}}
+def code(text): return {'text_run':{'content':text,'text_element_style':{'inline_code':True}}}
+def highlight(text): return {'text_run':{'content':text,'text_element_style':{'background_color':2}}}
+
+def quote(s):
+    return {'block_type':2,'text':{'elements':[{'text_run':{'content':s,'text_element_style':{}}}],'style':{'quote':True}}}
+```
+
+### Supported Block Types
+
+| Block | Type | Status |
+|-------|------|--------|
+| Page (root) | 1 | ✅ |
+| Text/Paragraph | 2 | ✅ |
+| Heading 1 | 3 | ✅ |
+| Heading 2 | 4 | ✅ |
+| Heading 3 | 5 | ✅ (H4-H9: types 6-11, untested) |
+| Divider | 19 | ❌ API error 1770001 |
+
+### Supported Text Styles
+
+| Style | Field | Example |
+|-------|-------|---------|
+| Bold | `bold: true` | **text** |
+| Italic | `italic: true` | *text* |
+| Underline | `underline: true` | __text__ |
+| Strikethrough | `strikethrough: true` | ~~text~~ |
+| Inline code | `inline_code: true` | `code` |
+| Background color | `background_color: N` | highlight |
+| Link | `link: {url: '...'}` | [click](url) |
+
+### Supported Paragraph Styles
+
+| Style | Value | Example |
+|-------|-------|---------|
+| Bullet list | `style.list: {type:'bullet',indentLevel:1}` | * item |
+| Numbered list | `style.list: {type:'number',indentLevel:1,number:1}` | 1. item |
+| Task list | `style.list: {type:'checkBox',indentLevel:1}` | ☐ todo |
+| Block quote | `style.quote: true` | > quoted |
+| Alignment | `style.align: 'left'/'right'/'center'` | |
+
+### Tables (type 31)
+
+Table cells are child block_id references, not inline content. Multi-step:
+1. Create table block with `property: {row_size, column_size}`
+2. Create child text blocks for each cell
+3. Reference child block_ids in table.cells array
+
+Complex — use bullets as alternative for job listings.
 
 ### Step 4: Grant Permission
 
