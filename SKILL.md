@@ -120,7 +120,12 @@ requests.post(
 ### Field Name Correction
 The text style field is `text_element_style` (NOT `text_style`).
 
-### Helper Functions (Python)
+### Helper Functions (Python) — Verified Working (2026-05-04)
+
+Field name MUST be  (NOT ).
+Empty blocks (type 2 with empty elements) cause error 1770001 — use single space instead.
+
+
 
 ```python
 def h1(s): return {'block_type':3,'heading1':{'elements':[{'text_run':{'content':s,'text_element_style':{}}}]}}
@@ -145,7 +150,17 @@ def quote(s):
     return {'block_type':2,'text':{'elements':[{'text_run':{'content':s,'text_element_style':{}}}],'style':{'quote':True}}}
 ```
 
-### Supported Block Types
+### Block Types (Verified)
+
+| Block | Type | Verified |
+|-------|------|----------|
+| Page (root) | 1 | ✅ |
+| Text/Paragraph | 2 | ✅ |
+| Heading 1 | 3 | ✅ |
+| Heading 2 | 4 | ✅ |
+| Heading 3 | 5 | ✅ |
+| Divider | 19 | ❌ 1770001 |
+| Empty block | 2 + elements:[] | ❌ 1770001 |
 
 | Block | Type | Status |
 |-------|------|--------|
