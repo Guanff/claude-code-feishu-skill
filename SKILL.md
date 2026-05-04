@@ -150,57 +150,66 @@ def quote(s):
     return {'block_type':2,'text':{'elements':[{'text_run':{'content':s,'text_element_style':{}}}],'style':{'quote':True}}}
 ```
 
-### Block Types (Verified)
-
-| Block | Type | Verified |
-|-------|------|----------|
-| Page (root) | 1 | ✅ |
-| Text/Paragraph | 2 | ✅ |
-| Heading 1 | 3 | ✅ |
-| Heading 2 | 4 | ✅ |
-| Heading 3 | 5 | ✅ |
-| Divider | 19 | ❌ 1770001 |
-| Empty block | 2 + elements:[] | ❌ 1770001 |
+### Block Types (Verified 2026-05-04)
 
 | Block | Type | Status |
 |-------|------|--------|
 | Page (root) | 1 | ✅ |
 | Text/Paragraph | 2 | ✅ |
-| Heading 1 | 3 | ✅ |
-| Heading 2 | 4 | ✅ |
-| Heading 3 | 5 | ✅ (H4-H9: types 6-11, untested) |
-| Divider | 19 | ❌ API error 1770001 |
+| Heading 1-3 | 3-5 | ✅ |
+| Table Cell | 32 | Auto-generated |
+| Table | 31 | ✅ See below |
+| Divider | 19 | ❌ API bug |
+| Empty block | 2+elements:[] | ❌ API bug |
 
-### Supported Text Styles
+### Text Styles (text_element_style)
 
-| Style | Field | Example |
-|-------|-------|---------|
-| Bold | `bold: true` | **text** |
-| Italic | `italic: true` | *text* |
-| Underline | `underline: true` | __text__ |
-| Strikethrough | `strikethrough: true` | ~~text~~ |
-| Inline code | `inline_code: true` | `code` |
-| Background color | `background_color: N` | highlight |
-| Link | `link: {url: '...'}` | [click](url) |
+| Style | Field |
+|-------|-------|
+| Bold | `{bold: True}` |
+| Italic | `{italic: True}` |
+| Underline | `{underline: True}` |
+| Strikethrough | `{strikethrough: True}` |
+| Inline code | `{inline_code: True}` |
+| Highlight | `{background_color: N}` |
+| Link | `{link: {url: '...'}}` |
 
-### Supported Paragraph Styles
+### Paragraph Styles (text block style)
 
-| Style | Value | Example |
-|-------|-------|---------|
-| Bullet list | `style.list: {type:'bullet',indentLevel:1}` | * item |
-| Numbered list | `style.list: {type:'number',indentLevel:1,number:1}` | 1. item |
-| Task list | `style.list: {type:'checkBox',indentLevel:1}` | ☐ todo |
-| Block quote | `style.quote: true` | > quoted |
-| Alignment | `style.align: 'left'/'right'/'center'` | |
+| Style | Value |
+|-------|-------|
+| Bullet list | `{list: {type:'bullet', indentLevel:1}}` |
+| Numbered list | `{list: {type:'number', indentLevel:1, number:N}}` |
+| Block quote | `{quote: True}` |
 
-### Tables (type 31)
+### Divider Workaround
 
-Table cells are child block_id references, not inline content. Multi-step:
-1. Create table block with `property: {row_size, column_size}`
-2. Create child text blocks for each cell
-3. Reference child block_ids in table.cells array
+Block type 19 returns 1770001 on create. API can READ dividers but not CREATE them.
+Use a text block with dash characters: `text('──────────')`
 
-Complex — use bullets as alternative for job listings.
+### Table Workflow (type 31, VERIFIED)
+
+1. Create table block: Feishu auto-creates NxM type-32 cell blocks
+2. Each cell contains one empty text block (type 2)
+3. PATCH the inner text blocks with content
+
+```python
+table = {'block_type':31,'table':{'property':{'row_size':4,'column_size':4}}}
+r = POST(f'{API}/documents/{DOC}/blocks/{DOC}/children', json={'children':[table]})
+table_id = r.json()['data']['children'][0]['block_id']
+
+# Get cell blocks, then their inner text blocks
+cells = GET(f'{API}/documents/{DOC}/blocks/{table_id}/children').json()['data']['items']
+
+for i, cell in enumerate(cells):
+    text_bid = GET(f'{API}/documents/{DOC}/blocks/{cell["block_id"]}/children').json()['data']['items'][0]['block_id']
+    PATCH(f'{API}/documents/{DOC}/blocks/{text_bid}', json={
+        'update_text_elements': {'elements': [{'text_run': {
+            'content': row_data[i],
+            'text_element_style': {'bold': True} if is_header else {}
+        }}]}
+    })
+```
 
 ### Step 4: Grant Permission
 
