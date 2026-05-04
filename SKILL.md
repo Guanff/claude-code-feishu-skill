@@ -159,7 +159,7 @@ def quote(s):
 | Heading 1-3 | 3-5 | ✅ |
 | Table Cell | 32 | Auto-generated |
 | Table | 31 | ✅ See below |
-| Divider | 19 | ❌ API bug |
+| Divider | 22 | ✅ `{'block_type':22,'divider':{}}` |
 | Empty block | 2+elements:[] | ❌ API bug |
 
 ### Text Styles (text_element_style)
@@ -182,10 +182,11 @@ def quote(s):
 | Numbered list | `{list: {type:'number', indentLevel:1, number:N}}` |
 | Block quote | `{quote: True}` |
 
-### Divider Workaround
+### Divider
 
-Block type 19 returns 1770001 on create. API can READ dividers but not CREATE them.
-Use a text block with dash characters: `text('──────────')`
+`{'block_type': 22, 'divider': {}}`
+
+Note: block type 22 (NOT 19). The `divider` key is required even if empty.
 
 ### Table Workflow (type 31, VERIFIED)
 
