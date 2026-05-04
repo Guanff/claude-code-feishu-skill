@@ -178,8 +178,8 @@ def quote(s):
 
 | Style | Value |
 |-------|-------|
-| Bullet list | ❌ API drops style.list | Use `text('  * item')` |
-| Numbered list | ❌ API drops style.list | Use `text('  1. item')` |
+| Bullet list | 12 ✅ | `{'block_type':12,'bullet':{'elements':[...],'style':{}}}` |
+| Ordered list | 13 ✅ | `{'block_type':13,'ordered':{'elements':[...],'style':{'sequence':'auto'}}}` |
 | Block quote | `{quote: True}` |
 
 ### Divider
