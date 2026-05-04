@@ -178,8 +178,23 @@ def quote(s):
 
 | Style | Value |
 |-------|-------|
-| Bullet list | 12 ✅ | `{'block_type':12,'bullet':{'elements':[...],'style':{}}}` |
-| Ordered list | 13 ✅ | `{'block_type':13,'ordered':{'elements':[...],'style':{'sequence':'auto'}}}` |
+| Bullet list | 12 ✅ | Nested under parent block for indent |
+| Ordered list | 13 ✅ | `style: {'sequence': 'auto'}` |
+
+### Nested Lists (Indentation)
+
+Create parent block, then add children under its block_id:
+
+```python
+# Parent
+r = POST(f'{API}/{DOC}/blocks/{DOC}/children', json={'children':[ordered('规划算法')]})
+parent_id = r.json()['data']['children'][0]['block_id']
+
+# Indented children under parent
+POST(f'{API}/{DOC}/blocks/{parent_id}/children', json={'children':[
+    bullet('子项A'), bullet('子项B')
+]})
+```
 | Block quote | `{quote: True}` |
 
 ### Divider
