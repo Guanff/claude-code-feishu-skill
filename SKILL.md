@@ -178,8 +178,8 @@ def quote(s):
 
 | Style | Value |
 |-------|-------|
-| Bullet list | `{list: {type:'bullet', indentLevel:1}}` |
-| Numbered list | `{list: {type:'number', indentLevel:1, number:N}}` |
+| Bullet list | ❌ API drops style.list | Use `text('  * item')` |
+| Numbered list | ❌ API drops style.list | Use `text('  1. item')` |
 | Block quote | `{quote: True}` |
 
 ### Divider
